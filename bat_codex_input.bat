@@ -1,0 +1,1 @@
+.\universal-machine.exe files/codex.umz < files/codex-input.txt > out.txt
