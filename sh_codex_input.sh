@@ -1,0 +1,1 @@
+./universal-machine files/codex.umz < files/codex-input.txt > out.txt
