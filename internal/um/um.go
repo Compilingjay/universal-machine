@@ -11,18 +11,18 @@ import (
 // type Opcode uint32
 
 const (
-	CondMove uint32 = iota
+	CMov uint32 = iota
 	ArrIndex
 	ArrAmend
 	Add
 	Mult
-	Divide
+	Div
 	Nand
 	Halt
 	AllocArr
 	AbandonArr
-	Outp
-	Inp
+	Out
+	In
 	LoadProg
 	Orth
 )
@@ -37,7 +37,7 @@ type UM struct {
 	FreedArrs Queue
 	PC        uint32
 	ProgEnd   uint32
-	InChar    []uint8
+	InChar    [1]uint8
 	IO        *bufio.ReadWriter
 }
 
@@ -48,7 +48,7 @@ func NewUM() UM {
 		FreedArrs: Queue{},
 		PC:        0,
 		ProgEnd:   0,
-		InChar:    make([]uint8, 1),
+		InChar:    [1]uint8{0},
 		IO: bufio.NewReadWriter(
 			bufio.NewReader(os.Stdin),
 			bufio.NewWriter(os.Stdout),
@@ -56,12 +56,12 @@ func NewUM() UM {
 	}
 }
 
-func LoadInstructions(um *UM, instructions []uint32) {
+func (um *UM) LoadInstructions(instructions []uint32) {
 	um.Arrs[0] = slices.Clone(instructions)
 	um.ProgEnd = uint32(len(um.Arrs[0]))
 }
 
-func Run(um *UM) {
+func (um *UM) Run() {
 	for um.PC < um.ProgEnd {
 		instr := um.Arrs[0][um.PC]
 		op := (instr >> 28) & 0b1111
@@ -70,34 +70,34 @@ func Run(um *UM) {
 		c := (instr & 0b111)
 
 		switch op {
-		case CondMove:
-			ConditionalMove(um, a, b, c)
+		case CMov:
+			um.ConditionalMove(a, b, c)
 		case ArrIndex:
-			ArrayIndex(um, a, b, c)
+			_ = um.ArrayIndex(a, b, c)
 		case ArrAmend:
-			ArrayAmend(um, a, b, c)
+			um.ArrayAmend(a, b, c)
 		case Add:
-			Addition(um, a, b, c)
+			um.Addition(a, b, c)
 		case Mult:
-			Multiplication(um, a, b, c)
-		case Divide:
-			Division(um, a, b, c)
+			um.Multiplication(a, b, c)
+		case Div:
+			_ = um.Division(a, b, c)
 		case Nand:
-			Notand(um, a, b, c)
+			um.Notand(a, b, c)
 		case Halt:
-			HaltProgram()
+			um.HaltProgram()
 		case AllocArr:
-			ArrayAllocate(um, b, c)
+			um.ArrayAllocate(b, c)
 		case AbandonArr:
-			ArrayAbandon(um, c)
-		case Outp:
-			Output(um, c)
-		case Inp:
-			Input(um, c)
+			_ = um.ArrayAbandon(c)
+		case Out:
+			_ = um.Output(c)
+		case In:
+			_ = um.Input(c)
 		case LoadProg:
-			LoadProgram(um, b, c)
+			_ = um.LoadProgram(b, c)
 		case Orth:
-			Orthography(um, instr)
+			um.Orthography(instr)
 		default:
 			log.Fatalf("invalid opcode: %d", op)
 		}

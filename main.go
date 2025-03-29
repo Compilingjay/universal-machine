@@ -18,7 +18,7 @@ func main() {
 	}
 
 	um := NewUM()
-	LoadInstructions(&um, instructions)
+	um.LoadInstructions(instructions)
 
-	Run(&um)
+	um.Run()
 }

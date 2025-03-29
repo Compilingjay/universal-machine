@@ -16,14 +16,14 @@ func TestConditionalMove(t *testing.T) {
 	um.Regs[2] = v3
 
 	// no conditional move
-	ConditionalMove(&um, a, b, c)
+	um.ConditionalMove(a, b, c)
 	if um.Regs[a] != v1 {
 		t.Errorf("denied conditional move error, expected: %d, got: %d", v1, um.Regs[a])
 	}
 
 	// conditional move
 	um.Regs[c] = 1
-	ConditionalMove(&um, a, b, c)
+	um.ConditionalMove(a, b, c)
 	if um.Regs[a] != v2 {
 		t.Errorf("permitted conditional move failed, expected: %d, got: %d", v2, um.Regs[a])
 	}
@@ -35,7 +35,7 @@ func TestArithmetic(t *testing.T) {
 	var expected uint32 = 0x00000000
 	um.Regs[b] = 0xffffffff
 	um.Regs[c] = 0x00000001
-	Addition(&um, a, b, c)
+	um.Addition(a, b, c)
 	if um.Regs[a] != expected {
 		t.Errorf("addition failed, expected: %d, got: %d", expected, um.Regs[a])
 	}
@@ -43,7 +43,7 @@ func TestArithmetic(t *testing.T) {
 	expected = 0x00000000
 	um.Regs[b] = 0x80000000
 	um.Regs[c] = 0x00000002
-	Multiplication(&um, a, b, c)
+	um.Multiplication(a, b, c)
 	if um.Regs[a] != expected {
 		t.Errorf("multiplication failed, expected: %d, got: %d", expected, um.Regs[a])
 	}
@@ -56,7 +56,7 @@ func TestArrayAllocUseAndAbandon(t *testing.T) {
 	var arrSize uint32 = 16
 	um.Regs[c] = arrSize
 
-	ArrayAllocate(&um, b, c)
+	um.ArrayAllocate(b, c)
 	if um.Regs[b] != 1 {
 		t.Errorf("array identifier not returned, expected: %d, got: %d", 1, um.Regs[b])
 	}
@@ -76,7 +76,7 @@ func TestArrayAllocUseAndAbandon(t *testing.T) {
 	um.Regs[b] = offset
 	um.Regs[c] = v1
 
-	_ = ArrayAmend(&um, a, b, c)
+	_ = um.ArrayAmend(a, b, c)
 	actualValue := um.Arrs[um.Regs[a]][offset]
 	if actualValue != v1 {
 		t.Errorf("invalid array amendment, expected: %d, got: %d", v1, actualValue)
@@ -84,13 +84,13 @@ func TestArrayAllocUseAndAbandon(t *testing.T) {
 
 	um.Regs[b] = um.Regs[a] // move array identifier to register b
 	um.Regs[c] = offset
-	_ = ArrayIndex(&um, a, b, c)
+	_ = um.ArrayIndex(a, b, c)
 	if um.Regs[a] != v1 {
 		t.Errorf("array index not returning right value, expected: %d, got: %d", v1, um.Regs[a])
 	}
 
 	um.Regs[c] = um.Regs[b] // move array identifier to register c
-	_ = ArrayAbandon(&um, c)
+	_ = um.ArrayAbandon(c)
 	for _, v := range um.FreedArrs {
 		if v == um.Regs[c] {
 			return
@@ -109,7 +109,7 @@ func TestNand(t *testing.T) {
 	um.Regs[b] = v1
 	um.Regs[c] = v2
 
-	Notand(&um, a, b, c)
+	um.Notand(a, b, c)
 	if um.Regs[a] != expected {
 		t.Errorf("nand result not valid, expected: %d, got: %d", expected, um.Regs[a])
 	}
@@ -120,7 +120,7 @@ func TestOrthography(t *testing.T) {
 
 	var instr uint32 = 0xdf0000ff // op - 13, reg - 7, v == expected
 	var expected uint32 = 0x010000ff
-	Orthography(&um, instr)
+	um.Orthography(instr)
 	if um.Regs[7] != expected {
 		t.Errorf("orthography result not valid, expected: %d, got: %d", expected, um.Regs[7])
 	}
